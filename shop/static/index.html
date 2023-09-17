@@ -1,1 +1,38 @@
-Static dir.  index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>htmx Example</title>
+    <!-- Include the htmx library -->
+    <script src="https://unpkg.com/htmx.org@1.9.5"
+        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+        crossorigin="anonymous">
+    </script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
+</head>
+<body hx-boost="true" hx-ext="multi-swap">
+    <div id="parent-div">
+Static dir.  index.html with htmx. id=parent-div
+    </div>
+<br/>
+<div id="my-button">
+    <div x-data="{ yourvar: 5 }"> 
+<button hx-get="/handler/5"
+    hx-trigger="click"
+    hx-target="#parent-div"
+    _hx-target="#my-button"
+    hx-swap="innerHTML"
+    hx-include="[name='count']"
+    _hx-swap="multi:#parent-div,#my-button"
+>
+    Click Me!
+    >> initial value: <input name="count" type="number"/>
+</button>
+</div>
+
+<script>
+    // You can add any additional JavaScript code here
+</script>
+</body>
+</html>

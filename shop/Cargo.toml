@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1.0.75"
 axum = "0.6.20"
 diesel = { version = "2.1.1", features = ["sqlite"] }
+http = "0.2.9"
 hyper = "0.14.27"
 include_dir = "0.7.3"
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }

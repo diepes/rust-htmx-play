@@ -1,34 +1,51 @@
-// cargo watch -x run
+// export RUST_LOG=info; cargo watch -x check -x test -x run
+extern crate env_logger;
+extern crate log;
+// Import your custom logger module
+mod my_logger;
+
 // use actix_web::{get, web, App, HttpServer, Responder};
 use anyhow::Result;
 //use axum::prelude::*;  //could not find `prelude` in `axum`
 use axum::{
     extract::Path,
     extract::Query,
-    extract::State,
+    //extract::State,
     http::StatusCode,
-    response::{IntoResponse, Response},
+    response::{IntoResponse, Redirect}, // Response},
     routing::{get, get_service, post},
     //Json,
     Router,
     // ServiceExt,
 };
-use std::net::SocketAddr;
+//use std::net::SocketAddr;
 //use diesel::IntoSql;
 use http;
-use serde::{Deserialize, Serialize};
-use serde_json::Map;
-use std::sync::{Arc, Mutex};
-// use tokio::sync::Mutex as AsyncMutex;
-// use tower::ServiceBuilder;
+use serde::Deserialize; //, Serialize};
+                        //use serde_json::Map;
+                        // use std::sync::{Arc, Mutex};
+                        // use tokio::sync::Mutex as AsyncMutex;
+                        // use tower::ServiceBuilder;
 mod route_static;
+mod web;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Use your custom logger.
+    log::set_boxed_logger(Box::new(my_logger::MyLogger::new())).unwrap();
+    log::set_max_level(log::LevelFilter::Debug);
+    //env_logger::init();
+
+    // Now you can use the log macros to log messages.
+    log::debug!("This is an debug message");
+    log::info!("This is an info message");
+    log::warn!("This is a warning message");
+    log::error!("This is an error message");
+
     println!("Hello, world!");
     let webserver_ip = "127.0.0.1";
     let webserver_port = 8080;
-    println!("🚀 Started webserver on {webserver_ip}:{webserver_port}");
+    println!("🚀 Started webserver on http://{webserver_ip}:{webserver_port}");
     let _web = start_webserver(webserver_ip, webserver_port).await;
     println!("Next step ..");
     Ok(())
@@ -37,16 +54,14 @@ async fn main() -> Result<()> {
 async fn start_webserver(webserver_ip: &str, webserver_port: u16) -> Result<()> {
     //let s_dir = tower_http::services::ServeDir::new("static");
     // Create shared state using Arc and Mutex
-    let shared_state = Arc::new(Mutex::new(10));
+    // let shared_state = Arc::new(Mutex::new(10));
 
     let app = Router::new()
-        .route("/", get(index))
+        .route("/", get(web::index::get))
         .route("/counter/:current", get(counter))
         .route("/hello/:name", get(hello))
-        .nest("/s", route_static::routes())
-        //.nest("/s/", route_static::routes())
-        //.route("/s/", get(static_path))
-        //.route("/s/*path", get(static_path))
+        .nest("/s/", route_static::routes())
+        .route("/s", get(|| async { Redirect::permanent("/s/") }))
         .nest_service(
             "/static",
             get_service(tower_http::services::ServeDir::new("static")
@@ -62,6 +77,7 @@ async fn start_webserver(webserver_ip: &str, webserver_port: u16) -> Result<()> 
         )
         .route("/handler/*path", post(handler))
         .route("/handler/*path", get(handler))
+        .route("/h/*path", get(handler))
         // .layer(axum::AddData::layer(shared_state.clone()))
         ; // Add shared state as data
 
@@ -76,25 +92,6 @@ async fn start_webserver(webserver_ip: &str, webserver_port: u16) -> Result<()> 
     Ok(())
 }
 
-async fn index() -> impl IntoResponse {
-    // Create a custom response with a custom header
-    let mut response: Response<String> = axum::http::Response::new(
-        r"
-        Hello, World! from axum !
-        try /hello/name
-        try /static/hello.html
-    "
-        .into(),
-    );
-
-    // Add a custom header
-    response.headers_mut().insert(
-        http::header::REFERER, // Replace with your custom header name
-        http::header::HeaderValue::from_str("Custom-Value").unwrap(), // Replace with your custom header value
-    );
-
-    response
-}
 async fn counter(Path(current): axum::extract::Path<usize>) -> impl IntoResponse {
     let r = current;
     eprintln!("fn counter:{}=>{}", r, r + 1);
@@ -120,12 +117,12 @@ async fn handler(
 ) -> impl IntoResponse {
     // ...
     println!();
-    println!("handler headers:{headers:?}");
+    log::info!("handler headers:{headers:?}");
     println!("handler method:{method}");
     println!("handler path:{path:?}");
     println!("handler query:{query:?}");
     println!("handler body:\"{body}\"");
-    format!("lame msg from fn hander {:?}", query)
+    format!("axum lame msg from fn hander {}", query.count.unwrap())
 }
 
 async fn hello(name: axum::extract::Path<String>) -> impl IntoResponse {

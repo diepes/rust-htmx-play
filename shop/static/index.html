@@ -18,7 +18,7 @@ Static dir.  index.html with htmx. id=parent-div
 <br/>
 <div id="my-button">
     <div x-data="{ yourvar: 5 }"> 
-<button hx-get="/handler/5"
+<button hx-get="/handler/test"
     hx-trigger="click"
     hx-target="#parent-div"
     _hx-target="#my-button"
@@ -27,7 +27,7 @@ Static dir.  index.html with htmx. id=parent-div
     _hx-swap="multi:#parent-div,#my-button"
 >
     Click Me!
-    >> initial value: <input name="count" type="number"/>
+    >> initial value: <input name="count" type="number" value=9/>
 </button>
 </div>
 

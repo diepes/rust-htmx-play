@@ -25,3 +25,28 @@
       curl -i http://127.0.0.1:8080/s/index.html
       curl -i http://127.0.0.1:8080/hello/testing
       curl -i http://127.0.0.1:8080/static/hello2.html
+
+## Cargo watch
+
+* Install
+     $ export RUST_LOG=info; cargo watch -x check -x test -x run
+
+* Run tests only
+
+     $ cargo watch -x test
+
+* Run check then tests
+
+     $ cargo watch -x check -x test
+
+* Run run with arguments
+
+     $ cargo watch -x 'run -- --some-arg'
+
+* Run an arbitrary command
+
+     $ cargo watch -- echo Hello world
+
+* Run with features passed to cargo
+
+     $ cargo watch --features "foo,bar"

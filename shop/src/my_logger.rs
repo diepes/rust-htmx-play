@@ -4,9 +4,15 @@ use colored::*;
 use log::{Level, Log, Metadata, Record};
 use std::time::Instant;
 
+pub fn test() {
+    log::debug!("Test debug message");
+    log::info!("Test info message");
+    log::warn!("Test warning message");
+    log::error!("Test error message");
+}
 pub struct MyLogger {
     start_time: Instant,
-    newline_len: usize,  //print new line if log longer than this
+    newline_len: usize, //print new line if log longer than this
 }
 
 impl MyLogger {
@@ -37,8 +43,8 @@ impl Log for MyLogger {
             let elapsed_time = self.elapsed_time();
 
             // Format the log level with uniform padding to a length of 6 characters.
-            let padded_log_level = format!("{:5}", format!("{}", record.level()))
-                .color(match record.level() {
+            let padded_log_level =
+                format!("{:5}", format!("{}", record.level())).color(match record.level() {
                     Level::Error => Color::Red,
                     Level::Warn => Color::Yellow,
                     Level::Info => Color::Green,
@@ -48,13 +54,13 @@ impl Log for MyLogger {
 
             // Format the log message with the padded log level and color.
             let log_message = format!(
-                "[{}] {} [{}]: {}",
+                "[{}][{}][{}] {}",
                 elapsed_time,
                 padded_log_level,
                 record.module_path().unwrap_or("Unknown"),
                 record.args()
             );
-            
+
             // Check the length of the log message and add a new line if it's longer than newline_len characters.
             if log_message.len() > self.newline_len {
                 println!("{}\n", log_message);

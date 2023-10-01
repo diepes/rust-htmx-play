@@ -27,16 +27,19 @@ pub fn routes() -> Router {
         .route("/*path", get(static_path))
         .route("/template/*path", get(template))
 }
+
 async fn static_path_index() -> impl IntoResponse {
     println!("s static_path_index() async fn");
     get_file("index.html")
 }
+
 async fn static_path(path: axum::extract::Path<String>) -> impl IntoResponse {
     //let path_default = path.unwrap_or(String::from("index.html"));
     println!("s static_path() async fn");
     let path = path.trim_start_matches('/');
     get_file(path)
 }
+
 fn get_file(path: &str) -> axum::response::Response {
     let mime_type = mime_guess::from_path(&path).first_or_text_plain();
     println!("path={path}  {mime_type}");
@@ -60,13 +63,14 @@ fn get_file(path: &str) -> axum::response::Response {
 struct MyQuery {
     count: Option<u32>,
 }
+
 async fn template(
     path: Path<String>,
     query: Query<MyQuery>,
     method: http::Method,
     headers: http::HeaderMap,
     body: String,
-) -> impl IntoResponse {
+    ) -> impl IntoResponse {
     // ...
     let path = path.as_str();
     println!();
@@ -79,6 +83,9 @@ async fn template(
     let mime_type = "text/html";
     log::info!("template path={path}  {mime_type}");
     println!("template path={path}  {mime_type}");
+    if let Some(count) = query.count {
+        log::warn!("got count {}",count);
+    }
     match STATIC_DIR.get_file(path) {
         None => axum::response::Response::builder()
             .status(StatusCode::NOT_FOUND)
